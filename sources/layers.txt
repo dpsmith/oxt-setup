@@ -1,7 +1,9 @@
-bitbake,git://github.com/openembedded/bitbake.git,master,f8bf4499549f978ce7c93bc088a66f74cd751e2c
-openembedded-core,git://git.openembedded.org/openembedded-core.git,master,5433da972f2994f7176597d89499ccb65f876f88
-meta-openembedded,git://git.openembedded.org/meta-openembedded.git,master,24e1ebc21da20240a41984b7f5c90aa9bd65a7e8
-meta-openxt,git://github.com/apertussolutions/meta-openxt.git
-xenclient-oe-extra,git://github.com/OpenXT/xenclient-oe-extra.git
-meta-java,git://github.com/woglinde/meta-java.git,dora,5d528acac0eab6cfaa4ed3c290c7db3acd5047bf
-meta-selinux,git://github.com/OpenXT/meta-selinux.git,master,8e952c7da126d30f4aecb33abd3ef9252785cb40
+bitbake,git://github.com/openembedded/bitbake.git,1.28,HEAD
+openembedded-core,git://git.openembedded.org/openembedded-core.git,jethro,HEAD
+meta-openembedded,git://git.openembedded.org/meta-openembedded.git,jethro,HEAD
+meta-java,git://github.com/woglinde/meta-java.git,master,HEAD
+meta-selinux,git://git.yoctoproject.org/meta-selinux,jethro,HEAD
+meta-virtualization,git://git.yoctoproject.org/meta-virtualization,jethro,HEAD
+meta-measured,git://github.com/flihp/meta-measured.git,jethro,HEAD
+meta-intel,git://git.yoctoproject.org/meta-intel,jethro,HEAD
+xenclient-oe,git://github.com/OpenXT/xenclient-oe.git,master,HEAD
