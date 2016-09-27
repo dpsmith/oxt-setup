@@ -205,9 +205,82 @@ else
 fi # if -e ${OE_ENV_FILE}
 
 if ! [ -e ${OE_BUILD_DIR}/conf/site.conf ] ; then
-	config_oe
+    config_oe
 fi
 
+}
+
+###############################################################################
+# OXT_CONFIG() - Setup environment variables for OpenXT development
+###############################################################################
+function oxt_config()
+{
+set_environment
+
+: ${OXT_VER_FILE:="${OE_BUILD_DIR}/conf/distro/version"}
+
+if [ -e ${OXT_VER_FILE} ] ; then
+    . ${OXT_VER_FILE}
+fi
+
+if [ -z "${OXT_RELEASE}" ] ; then
+    echo -n "Unable to determine versioning for build, ensure a valid "
+    echo "${OXT_VER_FILE} exists"
+else
+    BRANCH=$(layer_info | grep xenclient | cut -f3 -d,)
+    : ${BUILD_ID:=$(date +%y%m%d)}
+    : ${OPENXT_GIT_MIRROR:="github.com/OpenXT"}
+    
+    cat > ${OE_BUILD_DIR}/conf/distro/generated.conf <<_EOF
+
+XENCLIENT_PACKAGE_FEED_URI="file:///storage/ipk"
+
+OPENXT_MIRROR="http://mirror.openxt.org"
+OPENXT_GIT_MIRROR="${OPENXT_GIT_MIRROR}"
+OPENXT_GIT_PROTOCOL="git"
+OPENXT_BRANCH="$BRANCH"
+OPENXT_TAG="$BRANCH"
+
+XENCLIENT_BUILD = "${BUILD_ID}"
+XENCLIENT_BUILD_DATE = "$(date +'%T %D')"
+XENCLIENT_BUILD_BRANCH = "${BRANCH}"
+XENCLIENT_VERSION = "${OXT_VERSION}"
+XENCLIENT_RELEASE = "${OXT_RELEASE}"
+XENCLIENT_TOOLS = "${XC_TOOLS_MAJOR}.${XC_TOOLS_MINOR}.${XC_TOOLS_MICRO}.${BUILD_ID}"
+
+# dir for generated deb packages
+XCT_DEB_PKGS_DIR := "${OE_BUILD_DIR}/xct_deb_packages"
+
+# Production and development repository-signing CA certificates
+REPO_PROD_CACERT="${OE_BUILD_DIR}/certs/prod-cacert.pem"
+REPO_DEV_CACERT="${OE_BUILD_DIR}/certs/dev-cacert.pem"
+_EOF
+
+fi
+}
+
+###############################################################################
+# OXT_CERTS() - Setup certificates for OpenXT build
+###############################################################################
+function oxt_certs()
+{
+set_environment
+
+mkdir -p ${OE_BUILD_DIR}/certs
+
+[ -e ${OE_BUILD_DIR}/certs/prod-cakey.pem ] || 
+    openssl genrsa -out ${OE_BUILD_DIR}/certs/prod-cakey.pem 2048
+[ -e ${OE_BUILD_DIR}/certs/dev-cakey.pem ] || 
+    openssl genrsa -out ${OE_BUILD_DIR}/certs/dev-cakey.pem 2048
+
+[ -e ${OE_BUILD_DIR}/certs/prod-cacert.pem ] || 
+    openssl req -new -x509 -key ${OE_BUILD_DIR}/certs/prod-cakey.pem \
+        -out ${OE_BUILD_DIR}/certs/prod-cacert.pem -days 1095 \
+        -subj "/C=US/ST=Massachusetts/L=Boston/O=OpenXT/OU=OpenXT/CN=openxt.org"
+[ -e ${OE_BUILD_DIR}/certs/dev-cacert.pem ] || 
+    openssl req -new -x509 -key ${OE_BUILD_DIR}/certs/dev-cakey.pem \
+        -out ${OE_BUILD_DIR}/certs/dev-cacert.pem -days 1095 \
+        -subj "/C=US/ST=Massachusetts/L=Boston/O=OpenXT/OU=OpenXT/CN=openxt.org"
 }
 
 ###############################################################################
@@ -458,6 +531,8 @@ then
             CL_MACHINE=$1
             shift
             oe_config $*
+            oxt_certs
+            oxt_config
             exit 0
             ;;
 
