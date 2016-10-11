@@ -37,56 +37,6 @@
 mkdir -p ${ISO_DIR}/packages.main
 mkdir -p ${ISO_DIR}/isolinux
 
-for mdir in ${IMAGE_DIR}/*; do
-    local machine=$(basename $mdir)
-    if echo $machine | grep -q dom0; then
-        cp *-
-    fi
-
-done
-
-###############################################################################
-# Copy all files from build to ISO directory structure
-###############################################################################
-
-image_table=(
-"xenclient-dom0         xenclient-initramfs                 cpio.gz"        \
-"xenclient-stubdomain   xenclient-stubdomain-initramfs      cpio.gz"        \
-"xenclient-dom0         xenclient-dom0                      xc.ext3.gz"     \
-"xenclient-uivm         xenclient-uivm                      xc.ext3.vhd.gz" \
-"xenclient-ndvm         xenclient-ndvm                      xc.ext3.vhd.gz" \
-"xenclient-dom0         xenclient-installer                 cpio.gz"        \
-"xenclient-dom0         xenclient-installer-part2           tar.bz2"        \
-)
-
-target="${ISO_DIR}"
-
-for entry in "${image_table[@]}"; do
-    machine=$(echo $entry | awk '{ print $1 }')
-    image=$(echo $entry | awk '{ print $2 }')
-    extension=$(echo $entry | awk '{ print $3 }')
-
-    real_name=$(echo $image | cut -f2 -d-)
-    source_base=${IMAGE_DIR}/${machine}/${image_name}-image
-    source_image=${source_base}-${machine}.${extension}
-
-    # Transfer image and give it the expected name
-    if [ -f ${source_image} ]; then
-        if [ "$image_name" = "xenclient-installer-part2" ]; then
-            $COPY ${source_image} ${target}/raw/control.${extension}
-            $COPY ${IMAGE_DIR}/${machine}/*.acm \
-                   ${IMAGE_DIR}/${machine}/tboot.gz \
-                   ${IMAGE_DIR}/${machine}/xen.gz \
-                   ${IMAGE_DIR}/${machine}/microcode_intel.bin \
-                   ${target}/isolinux/
-            $COPY ${IMAGE_DIR}/${machine}/bzImage-xenclient-dom0.bin \
-                   ${target}/isolinux/vmlinuz
-        else
-            $COPY ${source_image} \
-                ${target}/packages.main/${real_name}-rootfs.i686.${extension}
-        fi
-    fi
-done
 
 ###############################################################################
 # Generate a valid repository package directory
